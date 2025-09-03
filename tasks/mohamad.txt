@@ -1,0 +1,25 @@
+----------------------------------------------------------------------
+mohamad:
+REPL, Parser & Prompt (lead: shell loop)
+Modules: repl.rs, parser.rs, term.rs, signals.rs
+REPL loop:
+Print prompt "$ " (later: cwd + colors).
+Read line, handle Ctrl+D (EOF) → clean exit.
+Dispatch parsed commands to the executor.
+Parser (no pipes/globs initially):
+Tokenize with quotes ("…", '…') and escapes (\", \ ).
+Split into argv: Vec<String>; support simple ; chaining as bonus.
+
+Prompt:
+Minimal $ now; bonus: ~/projects/0-shell $ with color & exit status.
+
+Signals:
+Bonus: handle Ctrl+C (SIGINT) without killing the shell (ignore in REPL, set a flag).
+History/autocomplete (bonus):
+Optional: line-editing (your choice: simple custom or rustyline if allowed).
+Acceptance tests:
+Empty line → new prompt.
+Quoted strings preserved: echo "Hello There" → Hello There.
+Ctrl+D exits with status 0.
+(Bonus) Ctrl+C prints newline and shows prompt again.
+----------------------------------------------------------------------

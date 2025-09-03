@@ -1,0 +1,46 @@
+ibra — المنفّذ (Executor) و تسجيل الأوامر المدمجة (Builtin Registry)
+
+الوحدات:
+exec.rs ، errors.rs ، builtins/mod.rs
+
+تنفيذ الأوامر:
+
+البحث عن اسم الأمر داخل خريطة الأوامر المدمجة.
+
+إذا لم يتم العثور عليه → اطبع:
+Command '<name>' not found.
+
+تنفيذ الأمر المدمج، تحديث ShellState.last_status، والعودة إلى الموجّه بعد إكمال التنفيذ.
+
+نموذج الأخطاء:
+
+تعريف نوع الخطأ ShellError مع Display لتحويل أخطاء نظام التشغيل إلى رسائل مفهومة للمستخدم.
+
+توحيد رموز الخروج (0 نجاح، 1 خطأ عام، 2 خطأ في الاستخدام).
+
+قابلية التوسّع:
+
+تسجيل كل الأوامر المدمجة مرة واحدة في دالة builtins::registry().
+
+الواجهات:
+
+pub enum ShellError {
+    Io(std::io::Error),
+    Usage(&'static str),
+    NotFound(String),
+    // … (مثلاً: صلاحيات، أو ليس مجلداً، إلخ)
+}
+
+pub fn execute(cmd: Command, sh: &mut ShellState, registry: &BuiltinRegistry) -> i32;
+
+pub struct BuiltinRegistry {
+    map: std::collections::HashMap<&'static str, Box<dyn Builtin + Send + Sync>>
+}
+
+
+اختبارات القبول:
+
+أمر معروف يتم تنفيذه بشكل صحيح؛ أمر غير معروف يطبع الرسالة المطلوبة بالضبط.
+
+رموز الخروج يتم تخزينها في sh.last_status.
+

@@ -1,0 +1,33 @@
+Hend — File Ops I (ls, mkdir, rm -r)
+
+Modules: builtins/ls.rs, mkdir.rs, rm.rs, format_util.rs, fs_util.rs
+
+ls (support -l, -a, -F):
+
+-a: include dotfiles.
+
+-F: append / (dir), * (exec), @ (symlink).
+
+-l: perms, links, owner, group, size, mtime, name (no ACL/xattr needed).
+
+Use std::fs::Metadata + std::os::unix::fs::MetadataExt for mode, uid, gid, nlink, rdev.
+
+Owner/group lookup: libc::getpwuid, getgrgid (optional bonus).
+
+mkdir:
+
+Create with default perms; support parent creation? (not required).
+
+rm:
+
+Files: unlink.
+
+Dirs: only with -r; do recursive walk; handle symlinks safely.
+
+Acceptance tests:
+
+ls basic & flags work; -l formatting approximate Unix.
+
+mkdir newdir then ls shows it; existing → error.
+
+rm file removes; rm dir fails unless -r; rm -r dir removes.

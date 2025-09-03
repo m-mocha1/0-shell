@@ -1,0 +1,89 @@
+msh drory kteer
+
+Repository Layout
+0-shell/
+ ├─ Cargo.toml
+ └─ src/
+    ├─ main.rs
+    ├─ lib.rs
+    ├─ repl.rs
+    ├─ parser.rs
+    ├─ exec.rs
+    ├─ signals.rs
+    ├─ term.rs
+    ├─ errors.rs
+    ├─ color.rs
+    ├─ format_util.rs
+    ├─ fs_util.rs
+    └─ builtins/
+       ├─ mod.rs
+       ├─ echo.rs
+       ├─ cd.rs
+       ├─ ls.rs
+       ├─ pwd.rs
+       ├─ cat.rs
+       ├─ cp.rs
+       ├─ rm.rs
+       ├─ mv.rs
+       ├─ mkdir.rs
+       └─ exit.rs
+tests/
+ ├─ integration_repl.rs
+ ├─ ls_format.rs
+ └─ file_ops.rs
+
+Milestones (3 sprints)
+
+Sprint 1 (Core loop + minimal built-ins)
+
+A: REPL + parser (no history), basic prompt, EOF handling.
+
+B: Executor + registry + error type.
+
+C: echo, pwd, cd, exit.
+
+Skeletons for D/E commands with todo!().
+
+Definition of Done: cd/pwd/echo/exit work interactively; unknown prints required message; unit tests green.
+
+Sprint 2 (File operations)
+
+D: ls (+-a/-F), mkdir, rm -r.
+
+E: cat, cp, mv (rename + EXDEV fallback).
+
+A: (bonus) Ctrl+C handling at REPL level.
+
+Definition of Done: File ops behave on temp dirs in tests/; ls -l roughly matches expected formatting.
+
+Sprint 3 (Polish & Bonuses)
+
+A: cwd prompt + command history (bonus).
+
+D/E: colorized output (bonus), owner/group names (bonus).
+
+B: ; command chaining (bonus).
+
+Whole team: help page and error message consistency.
+
+Definition of Done: Non-crashing on malformed inputs; smoke tests scripted in tests/.
+
+Coding Standards
+
+No external binaries. Only Rust std + (optionally) libc for uid/gid lookups. Avoid heavy deps to keep it embedded-friendly.
+
+Return Result<i32, ShellError> from built-ins; never panic!() for user errors.
+
+Use std::fs / std::os::unix::* APIs; print human messages mirroring Unix (ENOENT → “No such file or directory”, EACCES → “Permission denied”).
+
+Keep output stable for tests (no random ordering; sort ls entries by name unless -l needs natural order).
+
+Integration Contracts (keep merges smooth)
+
+Parser contract: argv already unquoted/unescaped; no globbing/pipes.
+
+Executor contract: argv[0] is lookup key; built-ins must not call std::process::Command.
+
+ShellState: single source of truth for cwd, updated by cd; built-ins should use sh.cwd.join(path) for relative paths.
+
+Errors: ShellError::Io(e) prints e.kind() + path; do not expose Rust debug traces.

@@ -1,0 +1,27 @@
+Noor — File Ops II (cat, cp, mv) + Polishing (colors)
+
+Modules: builtins/cat.rs, cp.rs, mv.rs, color.rs
+
+cat [files…]:
+
+Stream each file to stdout; - means stdin (optional).
+
+cp SRC DST:
+
+File→file and file→dir; copy bytes, preserve mode (bonus).
+
+mv SRC DST:
+
+Try rename; if EXDEV (cross-fs), fallback to copy+remove.
+
+Color (bonus):
+
+Optional colorized output for ls & errors based on file type.
+
+Acceptance tests:
+
+cat prints file contents; nonexistent prints error, continues to next file.
+
+cp then cmp-like byte equality (unit test).
+
+mv within same fs via rename, across fs via copy+remove.

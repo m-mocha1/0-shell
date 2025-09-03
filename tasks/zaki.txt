@@ -1,0 +1,31 @@
+Zaki — Navigation & Simple Built-ins (cd, pwd, echo, exit)
+
+Modules: builtins/cd.rs, pwd.rs, echo.rs, exit.rs
+
+echo [args…] → print joined with spaces, handle quotes already parsed.
+
+cd [dir]:
+
+No arg → $HOME.
+
+~ expansion (bonus: ~user).
+
+Update sh.cwd; std::env::set_current_dir.
+
+pwd:
+
+Print canonical path (resolve symlinks? keep simple: current_dir()).
+
+exit [status?]:
+
+Validate optional status int; set sh.running = false.
+
+Acceptance tests:
+
+cd to existing dir; error on not found / not directory.
+
+pwd matches current_dir().
+
+echo preserves spaces from parser.
+
+exit 7 ends loop with code 7.
