@@ -1,5 +1,5 @@
-use crate::error::ShellError;
-use crate::repl::Command; // Add this line if Command is defined in command.rs
+// use crate::error::ShellError;
+// use crate::repl::Command; // Add this line if Command is defined in command.rs
 use crate::{Builtin, ShellState};
 use std::collections::HashMap;
 pub struct BuiltinRegistry {
