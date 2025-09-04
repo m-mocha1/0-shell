@@ -1,6 +1,11 @@
 use std::io;
 use std::io::Write;
 use std::path::PathBuf;
+use crate::exe::BuiltinRegistry;
+#[derive(Debug)]
+pub struct Command {
+    pub argv: Vec<String>, 
+}
 pub struct ShellState {
     pub cwd: PathBuf,
     pub running: bool,
@@ -59,7 +64,7 @@ the character ' (single quote)
 '\'' → match the single quote character
 '"' → match the double quote character
 */
-fn parts(line: &str) -> Option<Vec<String>> {
+pub  fn parts(line: &str) -> Option<Command> {
     let mut args = Vec::<String>::new();
     let mut cur = String::new();
     let mut in_single = false;
@@ -94,5 +99,5 @@ fn parts(line: &str) -> Option<Vec<String>> {
     if !cur.is_empty() {
         args.push(cur);
     }
-    if args.is_empty() { None } else { Some(args) }
+    if args.is_empty() { None } else { Some(Command { argv: (args) }) }
 }

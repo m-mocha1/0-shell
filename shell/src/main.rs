@@ -1,4 +1,10 @@
 mod repl;
+mod exe;
+mod reg;
+mod builtin;
+mod error;
+
+pub use crate::builtin::Builtin;
 
 use crate::repl::{ShellState, repl_loop};
 
@@ -7,7 +13,6 @@ fn main() {
         cwd: std::env::current_dir().unwrap(),
         running: true,
     };
-    // let register = vec!["cd", "ls", "exit"];
 
     repl_loop(sh)
 }
