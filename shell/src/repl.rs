@@ -1,20 +1,20 @@
+use crate::reg::BuiltinRegistry;
 use std::io;
 use std::io::Write;
 use std::path::PathBuf;
-use crate::exe::BuiltinRegistry;
 #[derive(Debug)]
 pub struct Command {
-    pub argv: Vec<String>, 
+    pub argv: Vec<String>,
 }
 pub struct ShellState {
     pub cwd: PathBuf,
     pub running: bool,
 }
 
-pub fn repl_loop(sh: &mut ShellState) {
+pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
     while sh.running {
         // REPL logic goes here
-        print!("{} $:", sh.cwd.display());
+        print!("{} $ :", sh.cwd.display());
         //this to block the code until user input
         io::stdout().flush().ok();
 
@@ -27,6 +27,7 @@ pub fn repl_loop(sh: &mut ShellState) {
         // if user types exit
         if input.trim() == "exit" {
             sh.running = false;
+            break;
         }
         // is user pressed Enter without any input
         if input.trim().is_empty() {
@@ -35,12 +36,19 @@ pub fn repl_loop(sh: &mut ShellState) {
         // this for ctrl+D
         if bytes_read == 0 {
             println!("exit");
+            sh.running = false;
             break;
         }
 
         let Some(cmd) = parts(&input) else {
             continue;
         };
+        let name = cmd.argv[0].as_str();
+        if let Some(builtin) = reg.get(name) {
+            builtin.run(&cmd.argv, sh);
+        } else {
+            println!("Command '{}' not found", name);
+        }
     }
     sh.running = false;
 }
@@ -64,7 +72,7 @@ the character ' (single quote)
 '\'' → match the single quote character
 '"' → match the double quote character
 */
-pub  fn parts(line: &str) -> Option<Command> {
+pub fn parts(line: &str) -> Option<Command> {
     let mut args = Vec::<String>::new();
     let mut cur = String::new();
     let mut in_single = false;
@@ -99,5 +107,9 @@ pub  fn parts(line: &str) -> Option<Command> {
     if !cur.is_empty() {
         args.push(cur);
     }
-    if args.is_empty() { None } else { Some(Command { argv: (args) }) }
+    if args.is_empty() {
+        None
+    } else {
+        Some(Command { argv: (args) })
+    }
 }
