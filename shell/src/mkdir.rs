@@ -12,20 +12,35 @@ impl Builtin for Mkdir {
 
     fn run(&self, argv: &[String], sh: &mut ShellState) -> Result<(), ShellError> {
         let mut targets: Vec<PathBuf> = Vec::new();
-        for a in argv.iter().skip(1) { // argv[0] = "mkdir"
+        let mut parents = false; // يعبر عن -p
+
+        // argv[0] = "mkdir"
+        for a in argv.iter().skip(1) {
+            if a == "-p" {
+                parents = true;
+                continue;
+            }
             let p = PathBuf::from(a);
             targets.push(if p.is_absolute() { p } else { sh.cwd.join(p) });
         }
+
         if targets.is_empty() {
             eprintln!("mkdir: missing operand");
             return Ok(());
         }
 
         for p in targets {
-            if let Err(e) = fs::create_dir(&p) {
+            let res = if parents {
+                fs::create_dir_all(&p)
+            } else {
+                fs::create_dir(&p)
+            };
+
+            if let Err(e) = res {
                 eprintln!("mkdir: {}: {}", p.display(), e);
             }
         }
+
         Ok(())
     }
 }
