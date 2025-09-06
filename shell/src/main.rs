@@ -3,6 +3,8 @@ mod echo;
 mod error;
 mod reg;
 mod repl;
+mod rm;
+mod touch;
 
 pub use crate::builtin::Builtin;
 
@@ -15,6 +17,8 @@ fn main() {
     };
     let reg = &mut reg::BuiltinRegistry::new();
     reg.register(echo::Echo);
+    reg.register(rm::Rm);
+    reg.register(touch::Touch);
 
     repl_loop(sh, reg);
 }
