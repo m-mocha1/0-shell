@@ -2,8 +2,6 @@ Zaki — Navigation & Simple Built-ins (cd, pwd, echo, exit)
 
 Modules: builtins/cd.rs, pwd.rs, echo.rs, exit.rs
 
-echo [args…] → print joined with spaces, handle quotes already parsed.
-
 cd [dir]:
 
 No arg → $HOME.

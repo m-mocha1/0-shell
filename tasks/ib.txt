@@ -1,34 +1,32 @@
-ibra — المنفّذ (Executor) و تسجيل الأوامر المدمجة (Builtin Registry)
+Member B — Executor & Built-in Registry (lead: command dispatch)
 
-الوحدات:
-exec.rs ، errors.rs ، builtins/mod.rs
+Modules: exec.rs, errors.rs, builtins/mod.rs
 
-تنفيذ الأوامر:
+Command dispatch:
 
-البحث عن اسم الأمر داخل خريطة الأوامر المدمجة.
+Look up command name in built-ins map.
 
-إذا لم يتم العثور عليه → اطبع:
-Command '<name>' not found.
+If not found → Command '<name>' not found.
 
-تنفيذ الأمر المدمج، تحديث ShellState.last_status، والعودة إلى الموجّه بعد إكمال التنفيذ.
+Run built-in, update ShellState.last_status, return to prompt after completion.
 
-نموذج الأخطاء:
+Error model:
 
-تعريف نوع الخطأ ShellError مع Display لتحويل أخطاء نظام التشغيل إلى رسائل مفهومة للمستخدم.
+Define ShellError with Display mapping OS errors to human messages.
 
-توحيد رموز الخروج (0 نجاح، 1 خطأ عام، 2 خطأ في الاستخدام).
+Standardize exit codes (0 success, 1 generic error, 2 usage).
 
-قابلية التوسّع:
+Extensibility:
 
-تسجيل كل الأوامر المدمجة مرة واحدة في دالة builtins::registry().
+Register all built-ins once in builtins::registry().
 
-الواجهات:
+Interfaces:
 
 pub enum ShellError {
     Io(std::io::Error),
     Usage(&'static str),
     NotFound(String),
-    // … (مثلاً: صلاحيات، أو ليس مجلداً، إلخ)
+    // … (permission, not a directory, etc.)
 }
 
 pub fn execute(cmd: Command, sh: &mut ShellState, registry: &BuiltinRegistry) -> i32;
@@ -38,9 +36,8 @@ pub struct BuiltinRegistry {
 }
 
 
-اختبارات القبول:
+Acceptance tests:
 
-أمر معروف يتم تنفيذه بشكل صحيح؛ أمر غير معروف يطبع الرسالة المطلوبة بالضبط.
+Known command runs; unknown prints exact message.
 
-رموز الخروج يتم تخزينها في sh.last_status.
-
+Exit codes are captured into sh.last_status.

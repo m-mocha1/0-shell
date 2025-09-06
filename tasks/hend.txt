@@ -18,11 +18,7 @@ mkdir:
 
 Create with default perms; support parent creation? (not required).
 
-rm:
 
-Files: unlink.
-
-Dirs: only with -r; do recursive walk; handle symlinks safely.
 
 Acceptance tests:
 
