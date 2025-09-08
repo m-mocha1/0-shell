@@ -11,7 +11,6 @@ pub struct Command {
 pub struct ShellState {
     pub cwd: PathBuf,
     pub running: bool,
-    pub prompt_color: Fg,
 }
 
 pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
