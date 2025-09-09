@@ -36,7 +36,7 @@ pub fn name_color_by_type(path: &std::path::Path) -> String {
 
 #[cfg(not(unix))]
 pub fn name_color_by_type(path: &std::path::Path) -> String {
-    // على ويندوز: بس لّون المجلدات كأبسط شيء
+    // على ويندوز: بس لوّن المجلدات كأبسط شيء
     if let Ok(meta) = std::fs::metadata(path) {
         if meta.is_dir() {
             return paint(path.file_name().unwrap().to_string_lossy().as_ref(), Fg::Blue);
