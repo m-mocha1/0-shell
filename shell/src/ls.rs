@@ -492,7 +492,7 @@ mod chrono_like {
         }
     }
     pub fn days_to_ymd(days_since_1970: i64) -> (i32,u8,u8){
-        let mut z = days_since_1970 + 719468;
+        let  z = days_since_1970 + 719468;
         let era = (if z>=0 {z} else {z-146096}) / 146097;
         let doe = z - era*146097;
         let yoe = (doe - doe/1460 + doe/36524 - doe/146096)/365;

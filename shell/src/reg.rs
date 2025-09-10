@@ -1,6 +1,6 @@
 // use crate::error::ShellError;
 // use crate::repl::Command; // Add this line if Command is defined in command.rs
-use crate::{Builtin, ShellState};
+use crate::Builtin;
 use std::collections::HashMap;
 pub struct BuiltinRegistry {
     map: HashMap<&'static str, Box<dyn Builtin + Send + Sync>>,

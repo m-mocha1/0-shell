@@ -1,6 +1,7 @@
 use crate::color::Fg;
 use crate::color::paint;
 
+
 use crate::reg::BuiltinRegistry;
 use std::io;
 use std::io::Write;
@@ -9,7 +10,7 @@ use std::env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use rustyline::error::ReadlineError;
-use rustyline::{DefaultEditor, Result as RustylineResult};
+use rustyline::DefaultEditor;
 #[derive(Debug)]
 pub struct Command {
     pub argv: Vec<String>,
