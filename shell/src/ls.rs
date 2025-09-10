@@ -226,6 +226,7 @@ use std::fs;
 use crate::builtin::Builtin;
 use crate::error::ShellError;
 use crate::repl::ShellState;
+use crate::color::{paint, Fg};
 
 #[cfg(unix)]
 use std::os::unix::fs::MetadataExt;
@@ -330,10 +331,11 @@ fn list_dir(dir: &Path, flags: LsFlags) -> Result<(), ShellError> {
 fn print_entry(full_path: Option<&Path>, name: &str, meta: &fs::Metadata, flags: LsFlags)
     -> Result<(), ShellError>
 {
+    let colored_name = colorize_name(name, meta);
     let display_name = if flags.classify {
-        format!("{name}{}", classify_suffix(name, meta))
+        format!("{}{}", colored_name, classify_suffix(name, meta))
     } else {
-        name.to_string()
+        colored_name
     };
 
     if flags.long {
@@ -501,5 +503,17 @@ mod chrono_like {
         let m = mp + if mp < 10 {3} else {-9};
         let year = (y + (m <= 2) as i64) as i32;
         (year, m as u8, d as u8)
+    }
+}
+
+fn colorize_name(name: &str, meta: &fs::Metadata) -> String {
+    if meta.is_dir() {
+        paint(name, Fg::Blue)
+    } else if is_symlink(meta) {
+        paint(name, Fg::Cyan)
+    } else if is_executable(name, meta) {
+        paint(name, Fg::Green)
+    } else {
+        name.to_string()
     }
 }
