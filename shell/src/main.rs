@@ -11,6 +11,7 @@ mod reg;
 mod repl;
 mod rm;
 mod touch;
+mod cd;
 
 pub use crate::builtin::Builtin;
 
@@ -26,6 +27,7 @@ fn main() {
     reg.register(cat::Cat);
     reg.register(color::Fg::Default);
     reg.register(cp::Cp);
+    reg.register(cd::Cd);
     reg.register(echo::Echo);
     reg.register(ls::Ls);
     reg.register(mv::Mv);
