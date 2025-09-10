@@ -17,6 +17,7 @@ pub struct ShellState {
 }
 
 pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
+        let mut clear = false;
     while sh.running {
         // REPL logic
         print!("{} $ ", sh.cwd.display());
@@ -28,23 +29,40 @@ pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
         let mut input = String::new();
         //this reads the user input and returns the number of bytes read
         //if 0 it means the user pressed ctrl+D
-        let bytes_read = std::io::stdin().read_line(&mut input).unwrap_or(0);
-
+        let res = std::io::stdin().read_line(&mut input);
+        let bytes_read = match res {
+            Ok(n) => n,
+            Err(e) => {
+                eprintln!("read error: {e}");
+                break;
+            }
+        };
+        
         // if user types exit
         if input.trim() == "exit" {
             sh.running = false;
             break;
         }
+        
+        if input.trim() == "clear" {
+            sh.running = false;
+            clear = true;
+            break;            
+        }
+
         // is user pressed Enter without any input
         if input.trim().is_empty() {
             continue;
         }
         // this for ctrl+D
-        if bytes_read == 0 {
+        if is_eof(bytes_read, &input) {
+            println!();
             println!("exit");
             sh.running = false;
             break;
         }
+
+
 
         let Some(cmd) = parts(&input) else {
             continue;
@@ -57,6 +75,13 @@ pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
         }
     }
     sh.running = false;
+    if clear {
+        // Clear the terminal screen
+        print!("\x1B[2J\x1B[1;1H");// ansi escape code to clear screen and move cursor to top-left
+        io::stdout().flush().ok();
+        sh.running = true;
+        repl_loop(sh, reg); // Restart the REPL loop
+    }
 }
 
 /*
@@ -118,4 +143,9 @@ pub fn parts(line: &str) -> Option<Command> {
     } else {
         Some(Command { argv: (args) })
     }
+}
+#[cfg(unix)]
+fn is_eof(bytes_read: usize, _buf: &str) -> bool {
+    // Ctrl+D at empty line
+    bytes_read == 0
 }
