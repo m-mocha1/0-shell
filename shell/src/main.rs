@@ -11,6 +11,7 @@ mod reg;
 mod repl;
 mod rm;
 mod touch;
+mod cd;
 
 pub use crate::builtin::Builtin;
 
@@ -23,8 +24,9 @@ fn main() {
     };
     let reg = &mut reg::BuiltinRegistry::new();
     reg.register(cat::Cat);
-    reg.register(color::Color);
+//reg.register(color::Color);
     reg.register(cp::Cp);
+    reg.register(cd::Cd);
     reg.register(echo::Echo);
     reg.register(ls::Ls);
     reg.register(mv::Mv);
