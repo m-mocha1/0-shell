@@ -34,6 +34,7 @@ fn main() {
     reg.register(rm::Rm);
     reg.register(touch::Touch);
     reg.register(mkdir::Mkdir);
+    reg.register(cd::Cd);
 
     repl_loop(sh, reg);
 }
