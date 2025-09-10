@@ -20,10 +20,11 @@ fn main() {
     let sh = &mut repl::ShellState {
         cwd: std::env::current_dir().unwrap(),
         running: true,
+        prompt_color: color::Fg::Default,
     };
     let reg = &mut reg::BuiltinRegistry::new();
     reg.register(cat::Cat);
-    reg.register(color::Color);
+    reg.register(color::Fg::Default);
     reg.register(cp::Cp);
     reg.register(echo::Echo);
     reg.register(ls::Ls);

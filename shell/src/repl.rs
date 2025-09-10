@@ -1,5 +1,6 @@
 use crate::color::Fg;
 use crate::color::paint;
+
 use crate::reg::BuiltinRegistry;
 use std::io;
 use std::io::Write;
@@ -11,6 +12,8 @@ pub struct Command {
 pub struct ShellState {
     pub cwd: PathBuf,
     pub running: bool,
+    pub prompt_color: Fg,
+
 }
 
 pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
