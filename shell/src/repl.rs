@@ -49,18 +49,17 @@ pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
             clear = true;
             break;            
         }
-
+        // needed before input.trim().is_empty()
+        if bytes_read == 0 {
+            println!("exit");
+            sh.running = false;
+            break;
+        }
         // is user pressed Enter without any input
         if input.trim().is_empty() {
             continue;
         }
         // this for ctrl+D
-        if is_eof(bytes_read, &input) {
-            println!();
-            println!("exit");
-            sh.running = false;
-            break;
-        }
 
 
 
@@ -143,9 +142,4 @@ pub fn parts(line: &str) -> Option<Command> {
     } else {
         Some(Command { argv: (args) })
     }
-}
-#[cfg(unix)]
-fn is_eof(bytes_read: usize, _buf: &str) -> bool {
-    // Ctrl+D at empty line
-    bytes_read == 0
 }
