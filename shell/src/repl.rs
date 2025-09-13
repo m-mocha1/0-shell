@@ -5,6 +5,16 @@ use crate::reg::BuiltinRegistry;
 use std::io;
 use std::io::Write;
 use std::path::PathBuf;
+
+// Bonus imports
+use crate::bonus_history::History;
+use crate::bonus_autocomplete::autocomplete;
+use crate::bonus_prompt::get_prompt;
+use crate::bonus_chaining::chain_commands;
+use crate::bonus_pipes::parse_pipes;
+use crate::bonus_redirection::parse_redirection;
+use crate::bonus_env_vars::expand_env_vars;
+use crate::bonus_help::print_help;
 #[derive(Debug)]
 pub struct Command {
     pub argv: Vec<String>,
@@ -17,18 +27,15 @@ pub struct ShellState {
 }
 
 pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
-        let mut clear = false;
+    let mut clear = false;
+    let mut history = History::new();
     while sh.running {
-        // REPL logic
-        print!("{} $ ", sh.cwd.display());
-
-        //this to block the code until user input
+        // استخدم prompt مع المسار الحالي
+        let prompt = get_prompt();
+        print!("{}", prompt);
         io::stdout().flush().ok();
 
-        //this holds the user input
         let mut input = String::new();
-        //this reads the user input and returns the number of bytes read
-        //if 0 it means the user pressed ctrl+D
         let res = std::io::stdin().read_line(&mut input);
         let bytes_read = match res {
             Ok(n) => n,
@@ -38,39 +45,57 @@ pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
             }
         };
         
-        // if user types exit
+        let input = input.trim_end().to_string();
+        // سجل الأوامر
+        history.add(input.clone());
+
+        // دعم أمر help
+        if input.trim() == "help" {
+            print_help();
+            continue;
+        }
+        // دعم أمر exit
         if input.trim() == "exit" {
             sh.running = false;
             break;
         }
-        
+        // دعم أمر clear
         if input.trim() == "clear" {
             sh.running = false;
             clear = true;
-            break;            
+            break;
         }
-        // needed before input.trim().is_empty()
         if bytes_read == 0 {
             println!("exit");
             sh.running = false;
             break;
         }
-        // is user pressed Enter without any input
         if input.trim().is_empty() {
             continue;
         }
-        // this for ctrl+D
 
 
+            print!("{}", prompt);
+        // دعم المتغيرات البيئية
+        let input = expand_env_vars(&input);
 
-        let Some(cmd) = parts(&input) else {
-            continue;
-        };
-        let name = cmd.argv[0].as_str();
-        if let Some(builtin) = reg.get(name) {
-            builtin.run(&cmd.argv, sh);
-        } else {
-            println!("Command '{}' not found", name);
+        // دعم ربط الأوامر
+        let commands = chain_commands(&input);
+        for cmd_str in commands {
+            // دعم الأنابيب
+            let pipes = parse_pipes(cmd_str);
+            for pipe_cmd in pipes {
+                // دعم إعادة التوجيه
+                let _redir = parse_redirection(pipe_cmd);
+                if let Some(cmd) = parts(pipe_cmd) {
+                    let name = cmd.argv[0].as_str();
+                    if let Some(builtin) = reg.get(name) {
+                        builtin.run(&cmd.argv, sh);
+                    } else {
+                        println!("Command '{}' not found", name);
+                    }
+                }
+            }
         }
     }
     sh.running = false;
@@ -107,7 +132,6 @@ pub fn parts(line: &str) -> Option<Command> {
     let mut cur = String::new();
     let mut in_single = false;
     let mut in_double = false;
-
     let mut it = line.chars().peekable();
     while let Some(ch) = it.next() {
         // to detect spaces outside quotes and split accordingly
