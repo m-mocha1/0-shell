@@ -12,6 +12,7 @@ mod repl;
 mod rm;
 mod touch;
 mod cd;
+mod pwd;
 
 // Bonus features
 mod bonus_sigint;
@@ -67,6 +68,7 @@ fn main() {
     reg.register(touch::Touch);
     reg.register(mkdir::Mkdir);
     reg.register(cd::Cd);
+    reg.register(pwd::Pwd);
 
     // Print help on startup
     help::print_help();
