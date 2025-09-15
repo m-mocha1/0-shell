@@ -11,5 +11,5 @@ pub fn print_help() {
     println!("- touch: Create empty file");
     println!("- echo: Print text");
     println!("Bonus features:");
-    println!("- Command history, auto-completion, chaining, pipes, I/O redirection, environment variables, colorized output, SIGINT handling");
+    println!("- Command history, chaining, pipes, colorized output");
 }

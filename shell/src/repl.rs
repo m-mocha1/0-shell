@@ -7,14 +7,10 @@ use std::io::Write;
 use std::path::PathBuf;
 
 // Bonus imports
-use crate::bonus_history::History;
-use crate::bonus_autocomplete::autocomplete;
-use crate::bonus_prompt::get_prompt;
 use crate::bonus_chaining::chain_commands;
-use crate::bonus_pipes::parse_pipes;
-use crate::bonus_redirection::parse_redirection;
-use crate::bonus_env_vars::expand_env_vars;
 use crate::bonus_help::print_help;
+use crate::bonus_history::History;
+use crate::bonus_pipes::parse_pipes;
 #[derive(Debug)]
 pub struct Command {
     pub argv: Vec<String>,
@@ -23,91 +19,7 @@ pub struct ShellState {
     pub cwd: PathBuf,
     pub running: bool,
     pub prompt_color: Fg,
-
 }
-
-pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
-    let mut clear = false;
-    let mut history = History::new();
-    while sh.running {
-        // استخدم prompt مع المسار الحالي
-        let prompt = get_prompt();
-        print!("{}", prompt);
-        io::stdout().flush().ok();
-
-        let mut input = String::new();
-        let res = std::io::stdin().read_line(&mut input);
-        let bytes_read = match res {
-            Ok(n) => n,
-            Err(e) => {
-                eprintln!("read error: {e}");
-                break;
-            }
-        };
-        
-        let input = input.trim_end().to_string();
-        // سجل الأوامر
-        history.add(input.clone());
-
-        // دعم أمر help
-        if input.trim() == "help" {
-            print_help();
-            continue;
-        }
-        // دعم أمر exit
-        if input.trim() == "exit" {
-            sh.running = false;
-            break;
-        }
-        // دعم أمر clear
-        if input.trim() == "clear" {
-            sh.running = false;
-            clear = true;
-            break;
-        }
-        if bytes_read == 0 {
-            println!("exit");
-            sh.running = false;
-            break;
-        }
-        if input.trim().is_empty() {
-            continue;
-        }
-
-
-            print!("{}", prompt);
-        // دعم المتغيرات البيئية
-        let input = expand_env_vars(&input);
-
-        // دعم ربط الأوامر
-        let commands = chain_commands(&input);
-        for cmd_str in commands {
-            // دعم الأنابيب
-            let pipes = parse_pipes(cmd_str);
-            for pipe_cmd in pipes {
-                // دعم إعادة التوجيه
-                let _redir = parse_redirection(pipe_cmd);
-                if let Some(cmd) = parts(pipe_cmd) {
-                    let name = cmd.argv[0].as_str();
-                    if let Some(builtin) = reg.get(name) {
-                        builtin.run(&cmd.argv, sh);
-                    } else {
-                        println!("Command '{}' not found", name);
-                    }
-                }
-            }
-        }
-    }
-    sh.running = false;
-    if clear {
-        // Clear the terminal screen
-        print!("\x1B[2J\x1B[1;1H");// ansi escape code to clear screen and move cursor to top-left
-        io::stdout().flush().ok();
-        sh.running = true;
-        repl_loop(sh, reg); // Restart the REPL loop
-    }
-}
-
 /*
 A single backslash \ on its own is special (escape character).
 To represent it as a char, you must escape it:
@@ -127,6 +39,76 @@ the character ' (single quote)
 '\'' → match the single quote character
 '"' → match the double quote character
 */
+
+pub fn repl_loop(sh: &mut ShellState, reg: &mut BuiltinRegistry) {
+    let mut clear = false;
+    let mut history = History::new();
+    while sh.running {
+        print!("{} $ :", sh.cwd.display());
+        io::stdout().flush().ok();
+
+        let mut input = String::new();
+        let res = std::io::stdin().read_line(&mut input);
+        let bytes_read = match res {
+            Ok(n) => n,
+            Err(e) => {
+                eprintln!("read error: {e}");
+                break;
+            }
+        };
+
+        let input = input.trim_end().to_string();
+        history.add(input.clone());
+
+        if input.trim() == "help" {
+            print_help();
+            continue;
+        }
+        if input.trim() == "exit" {
+            sh.running = false;
+            break;
+        }
+        if input.trim() == "clear" {
+            sh.running = false;
+            clear = true;
+            break;
+        }
+        if bytes_read == 0 {
+            println!("exit");
+            sh.running = false;
+            break;
+        }
+        if input.trim().is_empty() {
+            continue;
+        }
+
+        print!("{} $ :", sh.cwd.display());
+
+        let commands = chain_commands(&input);
+        for cmd_str in commands {
+            let pipes = parse_pipes(cmd_str);
+            for pipe_cmd in pipes {
+                if let Some(cmd) = parts(pipe_cmd) {
+                    let name = cmd.argv[0].as_str();
+                    if let Some(builtin) = reg.get(name) {
+                        builtin.run(&cmd.argv, sh);
+                    } else {
+                        println!("Command '{}' not found", name);
+                    }
+                }
+            }
+        }
+    }
+    sh.running = false;
+    if clear {
+        // Clear the terminal screen
+        print!("\x1B[2J\x1B[1;1H"); // ansi escape code to clear screen and move cursor to top-left
+        io::stdout().flush().ok();
+        sh.running = true;
+        repl_loop(sh, reg); // Restart the REPL loop
+    }
+}
+
 pub fn parts(line: &str) -> Option<Command> {
     let mut args = Vec::<String>::new();
     let mut cur = String::new();
