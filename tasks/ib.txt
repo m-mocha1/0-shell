@@ -1,0 +1,43 @@
+Member B — Executor & Built-in Registry (lead: command dispatch)
+
+Modules: exec.rs, errors.rs, builtins/mod.rs
+
+Command dispatch:
+
+Look up command name in built-ins map.
+
+If not found → Command '<name>' not found.
+
+Run built-in, update ShellState.last_status, return to prompt after completion.
+
+Error model:
+
+Define ShellError with Display mapping OS errors to human messages.
+
+Standardize exit codes (0 success, 1 generic error, 2 usage).
+
+Extensibility:
+
+Register all built-ins once in builtins::registry().
+
+Interfaces:
+
+pub enum ShellError {
+    Io(std::io::Error),
+    Usage(&'static str),
+    NotFound(String),
+    // … (permission, not a directory, etc.)
+}
+
+pub fn execute(cmd: Command, sh: &mut ShellState, registry: &BuiltinRegistry) -> i32;
+
+pub struct BuiltinRegistry {
+    map: std::collections::HashMap<&'static str, Box<dyn Builtin + Send + Sync>>
+}
+
+
+Acceptance tests:
+
+Known command runs; unknown prints exact message.
+
+Exit codes are captured into sh.last_status.
